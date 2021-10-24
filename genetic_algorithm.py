@@ -24,7 +24,6 @@
 #          due to generations of evolution and mutation.
 
 
-
 import pygame
 from pygame.locals import *
 import random
@@ -44,7 +43,7 @@ pygame.display.set_caption("Genetic Algorithm")
 POPULATION_SIZE = 100
 MUTATION_RATE = 0.02
 GENE_LENGTH = 10000
-FONT_SIZE = 16
+FONT_SIZE = 14
 ARCADE_FONT = pygame.font.SysFont("Arial", FONT_SIZE)
 
 # --------------------------------------------------------Genome Class------------------------------------------------------------ #
@@ -195,15 +194,19 @@ def main():
     population = Population(food)
     population.populate()
     clock = pygame.time.Clock()
+    avg_fitness = 0
+    best_fitness = 0
 
     while run:
         clock.tick()
         config_vars = [
-            ["Framerate : ", clock.get_fps()],
-            ["Population size : ", POPULATION_SIZE],
-            ["Mutation rate : ", MUTATION_RATE],
-            ["Gene length : ", GENE_LENGTH],
-            ["Generation : ", population.generation]
+            ["Frame Rate : ", clock.get_fps()],
+            ["Population Size : ", POPULATION_SIZE],
+            ["Mutation Rate : ", MUTATION_RATE],
+            ["Gene Length : ", GENE_LENGTH],
+            ["Generation : ", population.generation],
+            ["Average Fitness : ", avg_fitness],
+            ["Best Fitness : ", best_fitness],
         ]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -215,8 +218,13 @@ def main():
             genome.move()
 
         food.draw()
+        fitness_list = [genome.calc_fitness()
+                        for genome in population.population]
+        avg_fitness = sum(fitness_list) / POPULATION_SIZE
+        best_fitness = max(avg_fitness, best_fitness)
         population.breed()
         print_config_vars(config_vars, 10, FONT_SIZE + 2)
+
         pygame.display.flip()
 
 
