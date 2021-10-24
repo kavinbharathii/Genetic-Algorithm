@@ -8,6 +8,7 @@ Implementing genetic algorithm on a population of a given size to attain the goa
 To create a algorithm that will, by the process of evolution, teach a populaion to navigate towards a desired goal
 
 <h3>Genetic Algorithm:</h3>
+
 - [step 1] A population, on it's first generation is left to roam randomly inside the canvas.
 
 - [step 2] The next generation is bred from the best performers, selected based on a fitness function of the first generation in hopes to recreate the genes that made the genomes to go in the desired direction.
