@@ -1,11 +1,24 @@
 # The Genetic Algorithm
 
-# Implementing genetic algorithm on a population of 50 individuals
-# to attain the goal of reaching a given target.
+# Implementing genetic algorithm on a population of a given
+# size to attain the goal of reaching a given target.
 
-# DISCLAIMER:
+# AIM:
 # I will be using the word "genome" to indicate
 # the creatures in the genetic evolution algorithm
+
+# GENETIC ALGORITHM
+# [step 1] A population, on it's first generation is left to roam randomly inside the canvas.
+#
+# [step 2] The next generation is bred from the best performers, selected based on a fitness function of the first generation in hopes to
+#          recreate the genes that made the genomes to go in the desired direction.
+#
+# [step 3] Some genes of the next generation is mutated[randomly changed] based on a MUTATION RATE, this, in theory, will bring
+#          some variance in the behaviors of the genomes to better replicate natural evolution.
+#
+# [step 4] The above steps are followed for many generation untill the genomes are almost perfectly skilled to reach the given target
+#          due to generations of evolution and mutation.
+
 
 import pygame
 from pygame.locals import *
@@ -14,19 +27,22 @@ import math
 
 pygame.font.init()
 
-# ---------------------------------------------------global variables------------------------------------------------------ #
+# ------------------------------------------------------global variables--------------------------------------------------------- #
 
-width = 600
-height = 400
+width = 720
+height = 480
 display = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Genetic Algorithm")
 
+# ---------------------------------------------------configuration constants------------------------------------------------------ #
 
-POPULATION_SIZE = 50
+POPULATION_SIZE = 100
 MUTATION_RATE = 0.02
-GENE_LENGTH = 500
+GENE_LENGTH = 10000
+FONT_SIZE = 16
+ARCADE_FONT = pygame.font.SysFont("Arial", FONT_SIZE)
 
-# ----------------------------------------------------Genome Class------------------------------------------------------- #
+# --------------------------------------------------------Genome Class------------------------------------------------------------ #
 
 
 class Genome(object):
@@ -37,7 +53,9 @@ class Genome(object):
         self.y = 10
         self.step = 0
         self.target = target
-        self.generation = 0
+        self.fitness = -1
+        self.dead = False
+        self.generation = -1
 
     def create_genes(self):
         for _ in range(self.gene_length):
@@ -50,9 +68,13 @@ class Genome(object):
                            (self.x, self.y), 4)
 
     def move(self):
-        for i in self.gene:
-            self.x += i[0]
-            self.y += i[1]
+        self.x += self.gene[self.step][0]
+        self.y += self.gene[self.step][1]
+        self.step += 1
+
+        if self.step >= self.gene_length:
+            self.fitness = self.calc_fitness()
+            self.dead = True
 
     def calc_distance(self):
         # using pythagoras' theorem to fing the shortest distance between the
@@ -73,7 +95,7 @@ class Genome(object):
 
     def crossover(self, partner):
         child = Genome(self.target)
-        for i in range(GENE_LENGTH):
+        for i in range(self.gene_length):
             if i % 2 == 0:
                 child.gene.append(self.gene[i])
             else:
@@ -83,27 +105,13 @@ class Genome(object):
 
     def mutate(self):
         for i in range(GENE_LENGTH):
-            mutation_probability = round(random.uniform(-1, 1), 2)
+            mutation_probability = round(random.uniform(0, 1), 2)
             if mutation_probability == MUTATION_RATE:
                 mutated_gene_x = random.uniform(-1, 1)
                 mutated_gene_y = random.uniform(-1, 1)
                 self.gene[i] = [mutated_gene_x, mutated_gene_y]
 
-
-# ---------------------------------------------------Target Class------------------------------------------------------ #
-
-
-class Target(object):
-    def __init__(self):
-        self.x = width // 2
-        self.y = height - 10
-        self.width = 20
-
-    def draw(self):
-        pygame.draw.rect(display, (0, 200, 170), (
-            self.x - self.width // 2, self.y - self.width // 2, self.width, self.width))
-
-# ---------------------------------------------------Population Class------------------------------------------------------ #
+# -------------------------------------------------------Population Class--------------------------------------------------------- #
 
 
 class Population(object):
@@ -116,64 +124,99 @@ class Population(object):
         self.population = [Genome(self.target) for _ in range(POPULATION_SIZE)]
         for genome in self.population:
             genome.create_genes()
+            genome.generation = self.generation
+
+    def natural_selection(self):
+        mating_pool = []
+        for genome in self.population:
+            fitness_ratio = math.floor(max(genome.fitness, 0) * 100)
+            for _ in range(fitness_ratio):
+                mating_pool.append(genome)
+
+        mating_pool = mating_pool[:POPULATION_SIZE]
+        return mating_pool
 
     def breed(self):
-        children = []
-        for _ in range(POPULATION_SIZE):
-            father_genome = random.choice(self.population)
-            mother_genome = random.choice(self.population)
-            child_genome = father_genome.crossover(mother_genome)
-            children.append(child_genome)
+        generation_dead = all([genome.dead for genome in self.population])
+        if generation_dead:
+            self.population = self.natural_selection()
+            children = Population(self.target)
 
-        # set the children population as the new generation
-        self.population = children
+            for _ in range(POPULATION_SIZE):
+                father_genome = random.choice(self.population)
+                mother_genome = random.choice(self.population)
+                child_genome = father_genome.crossover(mother_genome)
+                child_genome.mutate()
+                child_genome.generation = self.generation
+                children.population.append(child_genome)
 
-    # ---------------------------------------------------Main Loop------------------------------------------------------ #
+            self.population = children.population
+            self.generation += 1
 
 
-def natural_selection(fitness_population):
-    mating_pool = []
-    for pop in fitness_population:
-        probability = math.floor(max(pop[1], 0) * 100)
-        for _ in range(probability):
-            mating_pool.append(pop[0])
+# ---------------------------------------------------------Target Class----------------------------------------------------------- #
 
-    return mating_pool
+
+class Target(object):
+    def __init__(self):
+        self.x = width // 2
+        self.y = height - 10
+        self.width = 20
+
+    def draw(self):
+        pygame.draw.rect(display, (0, 200, 170), (
+            self.x - self.width // 2, self.y - self.width // 2, self.width, self.width))
+
+# -----------------------------------------------------------DEBUG FUNC------------------------------------------------------------ #
+
+
+def config_str(name, config_var):
+    content = f'{name}' + str(round(float(config_var), 2))
+    render_text = ARCADE_FONT.render(content, 1, pygame.Color("Cyan"))
+    return render_text
+
+
+def print_config_vars(vars, y, rez):
+    for var in vars:
+        display.blit(config_str(var[0], var[1]), (10, y))
+        y += rez
+
+# -----------------------------------------------------------Game Loop------------------------------------------------------------ #
 
 
 def main():
     run = True
     food = Target()
-    population = [Genome(food) for _ in range(POPULATION_SIZE)]
-    # population = [Genome()]
-    for genome in population:
-        genome.create_genes()
-
-    fitness_list = []
-    generation = 0
+    population = Population(food)
+    population.populate()
+    clock = pygame.time.Clock()
 
     while run:
+        clock.tick()
+        config_vars = [
+            ["Framerate : ", clock.get_fps()],
+            ["Population size : ", POPULATION_SIZE],
+            ["Mutation rate : ", MUTATION_RATE],
+            ["Gene length : ", GENE_LENGTH],
+            ["Generation : ", population.generation]
+        ]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
         display.fill((0, 0, 0))
-        for genome in population:
-            # genome.draw()
+        for genome in population.population:
+            genome.draw()
             genome.move()
-        food.draw()
-        for genome in population:
-            fitness = genome.calc_fitness()
-            fitness_list.append((genome, fitness))
 
-        fitness_list.sort(key=lambda x: x[1])
-        fitness_list[::-1]
-        mating_pool = natural_selection(fitness_population=fitness_list)
-        mating_pool = mating_pool[:POPULATION_SIZE]
-        population = breed(mating_pool, food)
-        fitness_list = []
+        food.draw()
+        population.breed()
+        print_config_vars(config_vars, 10, FONT_SIZE + 2)
         pygame.display.flip()
 
 
 if __name__ == "__main__":
     main()
+
+
+# -------------------------------------------------------------------------------------------------------------------------------- #
