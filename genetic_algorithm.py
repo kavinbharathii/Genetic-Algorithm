@@ -3,9 +3,13 @@
 # Implementing genetic algorithm on a population of a given
 # size to attain the goal of reaching a given target.
 
-# AIM:
+# DISCLAIMER:
 # I will be using the word "genome" to indicate
 # the creatures in the genetic evolution algorithm
+
+# AIM:
+# To create a algorithm that will, by the process of evolution, teach a populaion
+# to navigate towards a desired goal
 
 # GENETIC ALGORITHM
 # [step 1] A population, on it's first generation is left to roam randomly inside the canvas.
@@ -18,6 +22,7 @@
 #
 # [step 4] The above steps are followed for many generation untill the genomes are almost perfectly skilled to reach the given target
 #          due to generations of evolution and mutation.
+
 
 
 import pygame
