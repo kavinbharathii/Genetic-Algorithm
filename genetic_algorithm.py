@@ -137,7 +137,6 @@ class Population(object):
             for _ in range(fitness_ratio):
                 mating_pool.append(genome)
 
-        mating_pool = mating_pool[:POPULATION_SIZE]
         return mating_pool
 
     def breed(self):
