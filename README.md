@@ -18,7 +18,6 @@ To create a algorithm that will, by the process of evolution, teach a populaion 
 - [step 4] The above steps are followed for many generation untill the genomes are almost perfectly skilled to reach the given target due to generations of evolution and mutation.
 
 # References
-- Link to Luke Garrigan's article on genetic algorithm : https://dev.to/lukegarrigan/genetic-algorithms-in-javascript-mc3
 - Link to John Fish's youtubue video on genetic algorithm : https://youtu.be/_Vxjh1QxApA
 
 # Project images
