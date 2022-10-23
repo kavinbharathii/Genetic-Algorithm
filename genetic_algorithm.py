@@ -174,7 +174,7 @@ class Target(object):
 
 
 def config_str(name, config_var):
-    content = f'{name}' + str(round(float(config_var), 2))
+    content = name + str(round(float(config_var), 2))
     render_text = ARCADE_FONT.render(content, 1, pygame.Color("Cyan"))
     return render_text
 
@@ -199,13 +199,13 @@ def main():
     while run:
         clock.tick()
         config_vars = [
-            ["Frame Rate : ", clock.get_fps()],
+            ["Frame Rate        : ", clock.get_fps()],
             ["Population Size : ", POPULATION_SIZE],
-            ["Mutation Rate : ", MUTATION_RATE],
-            ["Gene Length : ", GENE_LENGTH],
-            ["Generation : ", population.generation],
+            ["Mutation Rate     : ", MUTATION_RATE],
+            ["Gene Length       : ", GENE_LENGTH],
+            ["Generation          : ", population.generation],
             ["Average Fitness : ", avg_fitness],
-            ["Best Fitness : ", best_fitness],
+            ["Best Fitness       : ", best_fitness],
         ]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
